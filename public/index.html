@@ -49,6 +49,13 @@
       .other .message-bubble {
         background: #efefef;
       }
+      .system-message {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+        margin: 0.5rem auto;
+        font-size: 0.9rem;
+      }
       #messages-container {
         padding: 1rem;
       }
@@ -70,24 +77,28 @@
         clientId = Math.random().toString(36).substring(2, 15);
         sessionStorage.setItem('clientId', clientId);
       }
+      // Notify the server that a user has connected with a clientId
+      socket.emit('user connected', clientId);
 
       const form = document.getElementById('form');
       const input = document.getElementById('input');
       const messages = document.getElementById('messages');
 
-      /**
-       * Generates a consistent color from a string ID.
-       * @param {string} id The client ID.
-       * @returns {string} An HSL color string.
-       */
       function getColorFromId(id) {
         let hash = 0;
         for (let i = 0; i < id.length; i++) {
           hash = id.charCodeAt(i) + ((hash << 5) - hash);
         }
-        // Ensure the hue is always a positive number
         const h = Math.abs(hash % 360);
         return `hsl(${h}, 60%, 65%)`;
+      }
+
+      function displaySystemMessage(message) {
+        const item = document.createElement('li');
+        item.className = 'system-message';
+        item.textContent = message;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
       }
 
       form.addEventListener('submit', (e) => {
@@ -97,6 +108,18 @@
           socket.emit('chat message', messageData);
           input.value = '';
         }
+      });
+
+      socket.on('welcome', (id) => {
+        displaySystemMessage(`あなたのユーザIDは ${id.substring(0, 6)} です`);
+      });
+
+      socket.on('user joined', (id) => {
+        displaySystemMessage(`ユーザ ${id.substring(0, 6)} が参加しました`);
+      });
+
+      socket.on('user left', (id) => {
+        displaySystemMessage(`ユーザ ${id.substring(0, 6)} が退出しました`);
       });
 
       socket.on('chat message', (data) => {
@@ -113,7 +136,7 @@
         const userIcon = document.createElement('img');
         userIcon.src = 'userIcon.png';
         userIcon.classList.add('user-icon');
-        userIcon.style.backgroundColor = getColorFromId(data.id); // Set background color here
+        userIcon.style.backgroundColor = getColorFromId(data.id);
 
         const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
