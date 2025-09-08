@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
+      #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
+      #input:focus { outline: none; }
+      #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+      #messages { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+      .message-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        max-width: 70%;
+      }
+      .message-item.me {
+        margin-left: auto;
+        flex-direction: row-reverse;
+      }
+      .user-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin: 0 10px;
+        flex-shrink: 0;
+      }
+      .message-content {
+        display: flex;
+        flex-direction: column;
+      }
+      .message-item.me .message-content {
+        align-items: flex-end;
+      }
+      .username {
+        font-size: 0.8rem;
+        color: #555;
+        margin-bottom: 0.2rem;
+      }
+      .message-bubble {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        word-wrap: break-word;
+      }
+      .me .message-bubble {
+        background: #dcf8c6;
+      }
+      .other .message-bubble {
+        background: #efefef;
+      }
+      #messages-container {
+        padding: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="messages-container">
+      <ul id="messages"></ul>
+    </div>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      let clientId = sessionStorage.getItem('clientId');
+      if (!clientId) {
+        clientId = Math.random().toString(36).substring(2, 15);
+        sessionStorage.setItem('clientId', clientId);
+      }
+
+      const form = document.getElementById('form');
+      const input = document.getElementById('input');
+      const messages = document.getElementById('messages');
+
+      /**
+       * Generates a consistent color from a string ID.
+       * @param {string} id The client ID.
+       * @returns {string} An HSL color string.
+       */
+      function getColorFromId(id) {
+        let hash = 0;
+        for (let i = 0; i < id.length; i++) {
+          hash = id.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        // Ensure the hue is always a positive number
+        const h = Math.abs(hash % 360);
+        return `hsl(${h}, 60%, 65%)`;
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (input.value) {
+          const messageData = { id: clientId, msg: input.value };
+          socket.emit('chat message', messageData);
+          input.value = '';
+        }
+      });
+
+      socket.on('chat message', (data) => {
+        const item = document.createElement('li');
+        item.classList.add('message-item');
+
+        const isMe = data.id === clientId;
+        if (isMe) {
+          item.classList.add('me');
+        } else {
+          item.classList.add('other');
+        }
+
+        const userIcon = document.createElement('img');
+        userIcon.src = 'userIcon.png';
+        userIcon.classList.add('user-icon');
+        userIcon.style.backgroundColor = getColorFromId(data.id); // Set background color here
+
+        const messageContent = document.createElement('div');
+        messageContent.classList.add('message-content');
+
+        const username = document.createElement('div');
+        username.classList.add('username');
+        username.textContent = data.id.substring(0, 6);
+
+        const messageBubble = document.createElement('div');
+        messageBubble.classList.add('message-bubble');
+        messageBubble.textContent = data.msg;
+
+        messageContent.appendChild(username);
+        messageContent.appendChild(messageBubble);
+
+        item.appendChild(userIcon);
+        item.appendChild(messageContent);
+
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+    </script>
+  </body>
+</html>
