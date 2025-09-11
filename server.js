@@ -8,26 +8,41 @@ const io = new Server(server);
 app.use(express.static('public'));
 
 io.on('connection', (socket) => {
-  // Listen for a new user connecting
+  // Chat functionality (for index.html)
   socket.on('user connected', (clientId) => {
     socket.clientId = clientId;
     console.log(clientId + ' connected');
-    // Welcome the new user
     socket.emit('welcome', clientId);
-    // Notify all other clients that a new user has joined
     socket.broadcast.emit('user joined', clientId);
+  });
+
+  socket.on('chat message', (msg) => {
+    io.emit('chat message', msg);
+  });
+  
+  // Room functionality (for sensor apps)
+  socket.on('join', (room) => {
+    socket.join(room);
+    console.log(`Client joined room: ${room}`);
+  });
+  
+  // Sensor data handling
+  socket.on('sensor', (data) => {
+    // Broadcast sensor data to all clients in the same room
+    socket.rooms.forEach(room => {
+      if (room !== socket.id) { // Don't broadcast to the default room (socket's own ID)
+        socket.to(room).emit('sensor', data);
+      }
+    });
   });
 
   socket.on('disconnect', () => {
     if (socket.clientId) {
       console.log(socket.clientId + ' disconnected');
-      // Notify all clients that a user has left
       io.emit('user left', socket.clientId);
+    } else {
+      console.log('Client disconnected');
     }
-  });
-
-  socket.on('chat message', (msg) => {
-    io.emit('chat message', msg);
   });
 });
 
