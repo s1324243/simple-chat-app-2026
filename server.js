@@ -28,12 +28,8 @@ io.on('connection', (socket) => {
   
   // Sensor data handling
   socket.on('sensor', (data) => {
-    // Broadcast sensor data to all clients in the same room
-    socket.rooms.forEach(room => {
-      if (room !== socket.id) { // Don't broadcast to the default room (socket's own ID)
-        socket.to(room).emit('sensor', data);
-      }
-    });
+    // センサーデータを'game'ルームにいる他のクライアントに送信する
+    socket.to('game').emit('sensor', data);
   });
 
   socket.on('disconnect', () => {

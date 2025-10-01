@@ -2,14 +2,22 @@
   "name": "aipro",
   "version": "1.0.0",
   "description": "Simple Chat App using Node.js",
+  "keywords": [],
+  "homepage": "https://github.com/kofujimura/simple-chat-sample#readme",
+  "bugs": {
+    "url": "https://github.com/kofujimura/simple-chat-sample/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kofujimura/simple-chat-sample.git"
+  },
+  "license": "MIT",
+  "author": "Ko Fujimura",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "Ko Fujimura",
-  "license": "MIT",
-  "type": "commonjs",
   "dependencies": {
     "express": "^5.1.0",
     "socket.io": "^4.8.1"
