@@ -124,11 +124,16 @@
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         if (input.value) {
-          const messageData = { id: clientId, msg: input.value };
-          socket.emit('chat message', messageData);
-          input.value = '';
-        }
-      });
+          const messageData = {
+            id: clientId,
+            msg: input.value,
+            timestamp: Date.now()
+          };
+
+        socket.emit('chat message', messageData);
+            input.value = '';
+          }
+        });
 
       socket.on('welcome', (id) => {
         displaySystemMessage(`あなたのユーザIDは ${id.substring(0, 6)} です`);
