@@ -1,3 +1,10 @@
+require('dotenv').config();
+
+const OpenAI = require('openai');
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
 const express = require('express');
 const app = express();
 const http = require('http');
@@ -6,6 +13,7 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 
 app.use(express.static('public'));
+app.use(express.json());
 
 io.on('connection', (socket) => {
   // Chat functionality (for index.html)
