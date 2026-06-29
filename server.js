@@ -18,6 +18,7 @@ app.use(path.join(__dirname, 'public'));
 app.use(express.json());
 
 app.get('/liveplanner.html', (req, res) => {
+  console.log("HIT /liveplanner.html");
   res.sendFile(__dirname + '/public/liveplanner.html');
 });
 
