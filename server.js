@@ -109,3 +109,10 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log("SERVER LOADED");
 });
+
+
+app.get('/debug', (req, res) => {
+  const fs = require('fs');
+  const files = fs.readdirSync(__dirname + '/public');
+  res.json({ files });
+});
