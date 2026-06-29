@@ -14,6 +14,8 @@ const io = new Server(server);
 
 app.use(express.static('public'));
 app.use(express.json());
+
+app.post('/api/', async (req, res) => {
   try {
     const { artist, venue, departure, budget } = req.body;
 
