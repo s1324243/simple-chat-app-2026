@@ -17,6 +17,10 @@ const path = require('path');
 app.use(path.join(__dirname, 'public'));
 app.use(express.json());
 
+app.get('/liveplanner.html', (req, res) => {
+  res.sendFile(__dirname + '/public/liveplanner.html');
+});
+
 app.post('/api/', async (req, res) => {
   try {
     const { artist, venue, departure, budget } = req.body;
