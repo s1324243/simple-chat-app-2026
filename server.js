@@ -15,40 +15,84 @@ const io = new Server(server);
 app.use(express.static('public'));
 app.use(express.json());
 
+app.post('/api/', async (req, res) => {
+  try {
+    const { artist, venue, departure, budget } = req.body;
+
+    const prompt = `
+以下のJSON形式のみで回答してください。
+
+{
+  "artist":"",
+  "transport":"",
+  "hotel":"",
+  "schedule":[
+    {
+      "time":"",
+      "plan":""
+    }
+  ]
+}
+
+推し: ${artist}
+ライブ会場: ${venue}
+出発地: ${departure}
+予算: ${budget}円
+
+ライブ遠征プランを作成してください。
+`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ]
+    });
+
+    const result = response.choices[0].message.content;
+console.log(result);
+
+const clean = result
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .trim();
+
+res.json(JSON.parse(clean));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: error.message
+    });
+  }
+});
 io.on('connection', (socket) => {
-  // Chat functionality (for index.html)
   socket.on('user connected', (clientId) => {
     socket.clientId = clientId;
     console.log(clientId + ' connected');
     socket.emit('welcome', clientId);
     socket.broadcast.emit('user joined', clientId);
   });
-
   socket.on('chat message', (msg) => {
     io.emit('chat message', {
       ...msg,
       timestamp: Date.now()
     });
   });
-  
-  // Room functionality (for sensor apps)
+
   socket.on('join', (room) => {
     socket.join(room);
-    console.log(`Client joined room: ${room}`);
   });
-  
-  // Sensor data handling
+
   socket.on('sensor', (data) => {
-    // センサーデータを'game'ルームにいる他のクライアントに送信する
     socket.to('game').emit('sensor', data);
   });
 
   socket.on('disconnect', () => {
     if (socket.clientId) {
-      console.log(socket.clientId + ' disconnected');
       io.emit('user left', socket.clientId);
-    } else {
-      console.log('Client disconnected');
     }
   });
 });
@@ -58,5 +102,3 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`listening on *:${PORT}`);
 });
-
-

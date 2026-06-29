@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>AIライブ遠征プランナー</title>
+<style>
+body{
+    font-family:sans-serif;
+    max-width:800px;
+    margin:30px auto;
+}
+input{
+    width:100%;
+    padding:8px;
+    margin:5px 0 15px;
+}
+button{
+    padding:10px 20px;
+}
+#result{
+    margin-top:20px;
+    border:1px solid #ccc;
+    padding:15px;
+}
+</style>
+</head>
+<body>
+
+<h1>AIライブ遠征プランナー</h1>
+
+<label>推し名</label>
+<input id="artist">
+
+<label>ライブ会場</label>
+<input id="venue">
+
+<label>出発地</label>
+<input id="departure">
+
+<label>予算(円)</label>
+<input id="budget">
+
+<button onclick="generatePlan()">プラン生成</button>
+
+<div id="result"></div>
+
+<script>
+async function generatePlan(){
+
+    const artist = document.getElementById("artist").value;
+    const venue = document.getElementById("venue").value;
+    const departure = document.getElementById("departure").value;
+    const budget = document.getElementById("budget").value;
+
+    const response = await fetch('/api/',{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+            artist,
+            venue,
+            departure,
+            budget
+        })
+    });
+
+    const data = await response.json();
+
+    let html = `
+        <h2>${data.artist}</h2>
+        <p><strong>移動手段:</strong> ${data.transport}</p>
+        <p><strong>ホテル:</strong> ${data.hotel}</p>
+        <h3>スケジュール</h3>
+    `;
+
+    data.schedule.forEach(item=>{
+        html += `
+            <p>
+            ${item.time}
+            ：
+            ${item.plan}
+            </p>
+        `;
+    });
+
+    document.getElementById("result").innerHTML = html;
+}
+</script>
+
+</body>
+</html>
