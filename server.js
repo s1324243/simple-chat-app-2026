@@ -14,7 +14,7 @@ const io = new Server(server);
 
 const path = require('path');
 
-app.use((express.staticpath.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 app.get('/liveplanner.html', (req, res) => {
